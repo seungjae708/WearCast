@@ -1,0 +1,33 @@
+
+/* Class = "UIButton"; configuration.title = "Button"; ObjectID = "0yR-SF-ijD"; */
+"0yR-SF-ijD.configuration.title" = "Button";
+
+/* Class = "UIButton"; normalTitle = "Button"; ObjectID = "0yR-SF-ijD"; */
+"0yR-SF-ijD.normalTitle" = "Button";
+
+/* Class = "UILabel"; text = "Label"; ObjectID = "ACE-OZ-Wbx"; */
+"ACE-OZ-Wbx.text" = "Label";
+
+/* Class = "UIButton"; configuration.title = "Button"; ObjectID = "D61-nh-K2T"; */
+"D61-nh-K2T.configuration.title" = "Button";
+
+/* Class = "UIButton"; normalTitle = "Button"; ObjectID = "D61-nh-K2T"; */
+"D61-nh-K2T.normalTitle" = "Button";
+
+/* Class = "UILabel"; text = "Label"; ObjectID = "MNi-C8-64s"; */
+"MNi-C8-64s.text" = "Label";
+
+/* Class = "UITabBarItem"; title = "Item 1"; ObjectID = "P4a-J8-Izi"; */
+"P4a-J8-Izi.title" = "Item 1";
+
+/* Class = "UILabel"; text = "Label"; ObjectID = "g2d-4z-6rb"; */
+"g2d-4z-6rb.text" = "Label";
+
+/* Class = "UITabBarItem"; title = "Item 2"; ObjectID = "gaC-VJ-rUy"; */
+"gaC-VJ-rUy.title" = "Item 2";
+
+/* Class = "UITabBarItem"; title = "Item"; ObjectID = "nec-go-XAz"; */
+"nec-go-XAz.title" = "Item";
+
+/* Class = "UILabel"; text = "Label"; ObjectID = "rm7-Za-aWF"; */
+"rm7-Za-aWF.text" = "Label";
