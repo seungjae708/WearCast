@@ -21,5 +21,9 @@
 			</array>
 		</dict>
 	</dict>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>현재 위치 기반 날씨를 보여주기 위해 사용합니다.
+
+</string>
 </dict>
 </plist>
