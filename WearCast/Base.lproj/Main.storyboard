@@ -111,8 +111,8 @@
                                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="27" translatesAutoresizingMaskIntoConstraints="NO" id="JOD-Te-fGL">
                                                         <rect key="frame" x="8" y="8" width="234" height="77"/>
                                                         <subviews>
-                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="강수 확률 20%" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="MNi-C8-64s">
-                                                                <rect key="frame" x="65.333333333333329" y="0.0" width="102.99999999999999" height="29.666666666666668"/>
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="습도 30%" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="MNi-C8-64s">
+                                                                <rect key="frame" x="81.999999999999972" y="0.0" width="69.666666666666657" height="29.666666666666668"/>
                                                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                                 <nil key="textColor"/>
                                                                 <nil key="highlightedColor"/>
@@ -170,8 +170,12 @@
                     </view>
                     <tabBarItem key="tabBarItem" title="Item 1" id="P4a-J8-Izi"/>
                     <connections>
+                        <outlet property="humidityLabel" destination="MNi-C8-64s" id="yA1-Ji-tBT"/>
                         <outlet property="locationButton" destination="D61-nh-K2T" id="NcY-rE-uyk"/>
                         <outlet property="locationLabel" destination="ACE-OZ-Wbx" id="Tzo-o1-Cqj"/>
+                        <outlet property="temperatureLabel" destination="rm7-Za-aWF" id="AHD-Iz-ecU"/>
+                        <outlet property="weatherImageView" destination="zx3-dZ-7d3" id="SRB-cE-iqr"/>
+                        <outlet property="windSpeedLabel" destination="g2d-4z-6rb" id="mah-TN-Tln"/>
                         <segue destination="Pwp-jL-sy3" kind="show" identifier="showLocationPicker" id="cOB-Lm-6dt"/>
                     </connections>
                 </viewController>
@@ -187,22 +191,48 @@
                         <rect key="frame" x="0.0" y="0.0" width="393" height="842"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="40" translatesAutoresizingMaskIntoConstraints="NO" id="voh-eR-s3g">
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="voh-eR-s3g">
                                 <rect key="frame" x="0.0" y="30" width="393" height="782"/>
                                 <subviews>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="a0w-Cx-hsG">
+                                        <rect key="frame" x="50.333333333333343" y="0.0" width="292.33333333333326" height="71.333333333333329"/>
+                                        <subviews>
+                                            <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="cn6-s3-iWz">
+                                                <rect key="frame" x="121.66666666666666" y="0.0" width="51" height="31"/>
+                                            </switch>
+                                            <stackView opaque="NO" contentMode="scaleToFill" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="MkM-SW-9UV">
+                                                <rect key="frame" x="0.0" y="51" width="292.33333333333331" height="20.333333333333329"/>
+                                                <subviews>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="도시 목록에서 선택" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Yhx-my-Ugc">
+                                                        <rect key="frame" x="0.0" y="0.0" width="126.66666666666667" height="20.333333333333332"/>
+                                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                        <nil key="textColor"/>
+                                                        <nil key="highlightedColor"/>
+                                                    </label>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="원하는 도시 직접 입력" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Z0z-cg-aUb">
+                                                        <rect key="frame" x="146.66666666666669" y="0.0" width="145.66666666666669" height="20.333333333333332"/>
+                                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                        <nil key="textColor"/>
+                                                        <nil key="highlightedColor"/>
+                                                    </label>
+                                                </subviews>
+                                            </stackView>
+                                        </subviews>
+                                    </stackView>
                                     <pickerView contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="JHu-21-aSa">
-                                        <rect key="frame" x="37" y="0.0" width="320" height="250"/>
+                                        <rect key="frame" x="36.666666666666657" y="91.333333333333314" width="320" height="250"/>
                                     </pickerView>
                                     <textField opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="248" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="(기타) 원하는 지역을 입력하세요." borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="OM0-zV-Ngs">
-                                        <rect key="frame" x="90.666666666666686" y="290" width="212" height="30"/>
+                                        <rect key="frame" x="96.666666666666686" y="361.33333333333331" width="200" height="30"/>
                                         <constraints>
+                                            <constraint firstAttribute="width" constant="200" id="DGK-Ql-2Cb"/>
                                             <constraint firstAttribute="height" constant="30" id="vb0-yQ-0Wk"/>
                                         </constraints>
                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                         <textInputTraits key="textInputTraits"/>
                                     </textField>
                                     <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="OB8-Cy-xL6">
-                                        <rect key="frame" x="71.666666666666686" y="360" width="250" height="250"/>
+                                        <rect key="frame" x="71.666666666666686" y="411.33333333333326" width="250" height="250"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="250" id="9Uh-Do-0ws"/>
                                             <constraint firstAttribute="width" constant="250" id="jND-wA-xbF"/>
@@ -216,7 +246,7 @@
                                         </userDefinedRuntimeAttributes>
                                     </mapView>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="2mM-ns-u3u">
-                                        <rect key="frame" x="159" y="650" width="75" height="132"/>
+                                        <rect key="frame" x="159" y="681.33333333333337" width="75" height="100.66666666666663"/>
                                         <state key="normal" title="Button"/>
                                         <buttonConfiguration key="configuration" style="plain" title="Button"/>
                                         <connections>
@@ -242,8 +272,11 @@
                     <connections>
                         <outlet property="locationTextField" destination="OM0-zV-Ngs" id="Hlv-5r-xCp"/>
                         <outlet property="mapView" destination="OB8-Cy-xL6" id="Hpg-Es-piJ"/>
+                        <outlet property="modeSwitch" destination="cn6-s3-iWz" id="4SI-nD-L1P"/>
+                        <outlet property="pickerModeLabel" destination="Yhx-my-Ugc" id="dRY-cd-nSB"/>
                         <outlet property="pickerView" destination="JHu-21-aSa" id="o1q-SV-KIU"/>
                         <outlet property="sendButton" destination="2mM-ns-u3u" id="MpU-DR-HDT"/>
+                        <outlet property="textModeLabel" destination="Z0z-cg-aUb" id="ya7-4i-ZcF"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Dh0-c1-PZA" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
