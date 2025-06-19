@@ -17,6 +17,10 @@ class HomeTabViewController: UIViewController, CLLocationManagerDelegate {
     // 자동 위치 감지 on/off
     var isAutoLocationEnabled = true
 
+    @IBOutlet weak var windSpeedLabel: UILabel!
+    @IBOutlet weak var humidityLabel: UILabel!
+    @IBOutlet weak var temperatureLabel: UILabel!
+    @IBOutlet weak var weatherImageView: UIImageView!
     @IBOutlet weak var locationButton: UIButton!
     
     @IBOutlet weak var locationLabel: UILabel!
@@ -40,6 +44,7 @@ class HomeTabViewController: UIViewController, CLLocationManagerDelegate {
             if let city = placemarks?.first?.locality {
                 DispatchQueue.main.async {
                     self?.locationLabel.text = city
+                    self?.fetchWeatherInfo(for: location.coordinate)
                 }
             }
         }
@@ -67,7 +72,49 @@ class HomeTabViewController: UIViewController, CLLocationManagerDelegate {
     }
 
     func fetchWeatherInfo(for coordinate: CLLocationCoordinate2D) {
-        print("선택된 위치 위도: \(coordinate.latitude), 경도: \(coordinate.longitude)")
-        // → 여기에 날씨 API 요청 추가하면 됨
+        let apiKey = "6f82acd7cbb472db29049a230b39d8b2" // 실제 API 키로 교체
+        let urlStr = "https://api.openweathermap.org/data/2.5/weather?lat=\(coordinate.latitude)&lon=\(coordinate.longitude)&appid=\(apiKey)"
+
+        guard let url = URL(string: urlStr) else {
+            print("❌ 잘못된 URL")
+            return
+        }
+
+        let task = URLSession.shared.dataTask(with: url) { data, response, error in
+            guard let data = data, error == nil else {
+                print("❌ 네트워크 에러:", error?.localizedDescription ?? "Unknown")
+                return
+            }
+
+            do {
+                if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+                   let weatherArray = json["weather"] as? [[String: Any]],
+                   let weather = weatherArray.first,
+                   let icon = weather["icon"] as? String,
+                   let main = json["main"] as? [String: Any],
+                   let wind = json["wind"] as? [String: Any] {
+
+                    let temp = (main["temp"] as? Double ?? 0.0) - 273.15
+                    let humidity = main["humidity"] as? Double ?? 0.0
+                    let windSpeed = wind["speed"] as? Double ?? 0.0
+
+                    let iconURL = URL(string: "https://openweathermap.org/img/wn/\(icon)@2x.png")!
+                    let iconData = try Data(contentsOf: iconURL)
+                    let image = UIImage(data: iconData)
+
+                    DispatchQueue.main.async {
+                        self.weatherImageView?.image = image
+                        self.temperatureLabel?.text = String(format: "%.1f°C", temp)
+                        self.humidityLabel?.text = String(format: "습도: %.0f%%", humidity)
+                        self.windSpeedLabel?.text = String(format: "풍속: %.1f m/s", windSpeed)
+                    }
+                }
+            } catch {
+                print("❌ JSON 파싱 에러:", error)
+            }
+        }
+
+        task.resume()
     }
+
 }
