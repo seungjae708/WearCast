@@ -10,9 +10,7 @@ class LocationPickerViewController: UIViewController, UIPickerViewDelegate, UIPi
     @IBOutlet weak var mapView: MKMapView!
     @IBOutlet weak var locationTextField: UITextField!
 
-    @IBOutlet weak var pickerModeLabel: UILabel!
-    @IBOutlet weak var modeSwitch: UISwitch!
-    @IBOutlet weak var textModeLabel: UILabel!
+    @IBOutlet weak var modeSegmentedControl: UISegmentedControl!
     
     var cities: [City] = []
 
@@ -25,72 +23,31 @@ class LocationPickerViewController: UIViewController, UIPickerViewDelegate, UIPi
         pickerView.dataSource = self
         locationTextField.delegate = self
 
-        setupModeSwitch()
+        modeSegmentedControl.selectedSegmentIndex = 0
+        updateInputMode()
         loadCityData()
         updateMapWithCity(at: 0)  // 첫 번째 도시를 기본 표시
     }
     
-    // 스위치 초기 설정
-    func setupModeSwitch() {
-        // 스위치 초기값 설정 (false = 피커뷰 모드, true = 텍스트 입력 모드)
-        modeSwitch.isOn = false
-        
-        // 레이블 텍스트 설정
-        pickerModeLabel.text = "도시 목록에서 선택"
-        textModeLabel.text = "직접 도시 입력"
-        
-        // 초기 모드 설정
-        updateInputMode()
-        
-        // 스위치 액션 연결
-        modeSwitch.addTarget(self, action: #selector(modeSwitchChanged), for: .valueChanged)
-    }
     
-    // 스위치 상태 변경 시 호출되는 메서드
-    @objc func modeSwitchChanged() {
+    @IBAction func modeSegmentChanged(_ sender: UISegmentedControl) {
         updateInputMode()
-        
-        // 텍스트 입력 모드로 전환 시 키보드 표시
-        if modeSwitch.isOn {
+    }
+
+    func updateInputMode() {
+        let isTextMode = (modeSegmentedControl.selectedSegmentIndex == 1)
+
+        pickerView.isHidden = isTextMode
+        pickerView.isUserInteractionEnabled = !isTextMode
+        locationTextField.isHidden = !isTextMode
+        locationTextField.isUserInteractionEnabled = isTextMode
+
+        if isTextMode {
             locationTextField.becomeFirstResponder()
         } else {
             locationTextField.resignFirstResponder()
-            // 피커뷰 모드로 전환 시 현재 선택된 도시로 지도 업데이트
             let selectedRow = pickerView.selectedRow(inComponent: 0)
             updateMapWithCity(at: selectedRow)
-        }
-    }
-    
-    // 입력 모드에 따라 UI 업데이트
-    func updateInputMode() {
-        if modeSwitch.isOn {
-            // 텍스트 입력 모드
-            pickerView.isHidden = true
-            pickerView.isUserInteractionEnabled = false
-            locationTextField.isHidden = false
-            locationTextField.isUserInteractionEnabled = true
-            
-            // 레이블 스타일 업데이트
-            pickerModeLabel.textColor = .systemGray
-            textModeLabel.textColor = .systemBlue
-            textModeLabel.font = UIFont.boldSystemFont(ofSize: 16)
-            pickerModeLabel.font = UIFont.systemFont(ofSize: 16)
-            
-        } else {
-            // 피커뷰 모드
-            pickerView.isHidden = false
-            pickerView.isUserInteractionEnabled = true
-            locationTextField.isHidden = true
-            locationTextField.isUserInteractionEnabled = false
-            
-            // 텍스트필드 내용 클리어
-            locationTextField.text = ""
-            
-            // 레이블 스타일 업데이트
-            pickerModeLabel.textColor = .systemBlue
-            textModeLabel.textColor = .systemGray
-            pickerModeLabel.font = UIFont.boldSystemFont(ofSize: 16)
-            textModeLabel.font = UIFont.systemFont(ofSize: 16)
         }
     }
 
@@ -118,7 +75,7 @@ class LocationPickerViewController: UIViewController, UIPickerViewDelegate, UIPi
 
     func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
         // 피커뷰 모드일 때만 지도 업데이트
-        if !modeSwitch.isOn {
+        if modeSegmentedControl.selectedSegmentIndex == 0 {
             updateMapWithCity(at: row)
         }
     }
@@ -139,12 +96,12 @@ class LocationPickerViewController: UIViewController, UIPickerViewDelegate, UIPi
         // 이미지뷰 설정
         let imageView = UIImageView()
         
-        // 🔍 이미지 로딩 디버깅
+        // 이미지 로딩 디버깅
         if let image = UIImage(named: city.imageName) {
             imageView.image = image
-            print("✅ 이미지 로드 성공: \(city.imageName)")
+            print("이미지 로드 성공: \(city.imageName)")
         } else {
-            print("❌ 이미지 로드 실패: \(city.imageName)")
+            print("이미지 로드 실패: \(city.imageName)")
             // 기본 이미지 설정 (선택사항)
             imageView.image = UIImage(systemName: "photo")
             imageView.tintColor = .systemGray
@@ -249,9 +206,11 @@ class LocationPickerViewController: UIViewController, UIPickerViewDelegate, UIPi
     }
 
     @IBAction func didTap(_ sender: Any) {
-        print("✅ 버튼 눌림")
+        print("버튼 눌림")
         
-        if modeSwitch.isOn {
+        let isTextMode = (modeSegmentedControl.selectedSegmentIndex == 1)
+//        if modeSwitch.isOn {
+        if isTextMode {
             // 텍스트 입력 모드인 경우
             guard let cityName = locationTextField.text, !cityName.isEmpty else {
                 showAlert(message: "도시 이름을 입력해주세요.")

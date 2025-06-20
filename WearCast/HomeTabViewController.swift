@@ -55,8 +55,24 @@ class HomeTabViewController: UIViewController, CLLocationManagerDelegate {
     }
 
     @IBAction func didTapLocationSelect(_ sender: Any) {
-        print("✅ 지역 선택 눌림")
+        print("지역 선택 눌림")
         performSegue(withIdentifier: "showLocationPicker", sender: nil)
+    }
+    @IBAction func didTapRecommend(_ sender: UIButton) {
+//        print("추천 받기 눌림")
+//        performSegue(withIdentifier: "showRecommendation", sender: nil)
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        if let recommendationVC = storyboard.instantiateViewController(withIdentifier: "RecommendationViewController") as? RecommendationViewController {
+            
+            // 날씨 정보 전달
+            recommendationVC.temperature = self.temperatureLabel.text ?? ""
+            recommendationVC.humidity = self.humidityLabel.text ?? ""
+            recommendationVC.windSpeed = self.windSpeedLabel.text ?? ""
+            
+            // 전체 화면 전환 설정
+            recommendationVC.modalPresentationStyle = .fullScreen
+            self.present(recommendationVC, animated: true, completion: nil)
+        }
     }
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -69,6 +85,28 @@ class HomeTabViewController: UIViewController, CLLocationManagerDelegate {
                 self?.fetchWeatherInfo(for: coordinate)
             }
         }
+        
+        if segue.identifier == "showRecommendation",
+           let destination = segue.destination as? RecommendationViewController {
+            
+            destination.temperature = temperatureLabel.text ?? ""
+            destination.humidity = humidityLabel.text ?? ""
+            destination.windSpeed = windSpeedLabel.text ?? ""
+            
+            // (선택) 더미 추천 데이터 전달
+            destination.recommendation = (
+                top: "얇은 니트",
+                bottom: "청바지",
+                outer: "가디건",
+                shoes: "운동화",
+                accessories: "헤어밴드",
+                tips: [
+                    "일교차가 있어 얇은 겉옷이 좋아요.",
+                    "습도가 낮아 정전기 방지 제품이 필요해요.",
+                    "바람이 있으니 모자를 추천해요."
+                ]
+            )
+        }
     }
 
     func fetchWeatherInfo(for coordinate: CLLocationCoordinate2D) {
@@ -76,13 +114,13 @@ class HomeTabViewController: UIViewController, CLLocationManagerDelegate {
         let urlStr = "https://api.openweathermap.org/data/2.5/weather?lat=\(coordinate.latitude)&lon=\(coordinate.longitude)&appid=\(apiKey)"
 
         guard let url = URL(string: urlStr) else {
-            print("❌ 잘못된 URL")
+            print("잘못된 URL")
             return
         }
 
         let task = URLSession.shared.dataTask(with: url) { data, response, error in
             guard let data = data, error == nil else {
-                print("❌ 네트워크 에러:", error?.localizedDescription ?? "Unknown")
+                print("네트워크 에러:", error?.localizedDescription ?? "Unknown")
                 return
             }
 
@@ -110,7 +148,7 @@ class HomeTabViewController: UIViewController, CLLocationManagerDelegate {
                     }
                 }
             } catch {
-                print("❌ JSON 파싱 에러:", error)
+                print("JSON 파싱 에러:", error)
             }
         }
 
