@@ -22,7 +22,10 @@ class MyPageViewController: UIViewController {
     }
 
     @IBAction func didTapFAQ(_ sender: UIButton) {
-
+        let faqVC = FAQViewController()
+        let navController = UINavigationController(rootViewController: faqVC)
+        navController.modalPresentationStyle = .pageSheet
+        present(navController, animated: true)
     }
 
     @IBAction func didTapLogout(_ sender: UIButton) {
