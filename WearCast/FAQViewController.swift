@@ -48,9 +48,9 @@ class FAQViewController: UIViewController {
     private func setupContent() {
         // 앱 아이콘
         let appIconImageView = UIImageView()
-        appIconImageView.image = UIImage(systemName: "cloud.sun.fill")
-        appIconImageView.tintColor = UIColor.systemBlue
-        appIconImageView.contentMode = .scaleAspectFit
+        appIconImageView.image = UIImage(named: "appstore")
+        appIconImageView.contentMode = .scaleAspectFill  // 꽉 차게
+        appIconImageView.clipsToBounds = true            // 바깥으로 안 나가게
         appIconImageView.translatesAutoresizingMaskIntoConstraints = false
         
         // 앱 제목
@@ -135,7 +135,7 @@ class FAQViewController: UIViewController {
         
         // 레이아웃 설정
         NSLayoutConstraint.activate([
-            appIconImageView.heightAnchor.constraint(equalToConstant: 80),
+            appIconImageView.heightAnchor.constraint(equalToConstant: 350),
             stackView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 32),
             stackView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
             stackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
