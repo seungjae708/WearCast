@@ -367,8 +367,14 @@ class RecommendationViewController: UIViewController {
 
         // 알림
         let alert = UIAlertController(title: "저장 완료", message: "날씨와 함께 착장을 저장했어요!", preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "확인", style: .default))
+        alert.addAction(UIAlertAction(title: "확인", style: .default, handler: { _ in
+            // 알림 닫은 후 RecommendationViewController도 닫기
+            self.dismiss(animated: true) {
+                self.presentingViewController?.dismiss(animated: true)
+            }
+        }))
         present(alert, animated: true)
+
     }
     
     @IBAction func didTapBackButton(_ sender: UIButton) {
