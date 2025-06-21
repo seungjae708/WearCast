@@ -11,6 +11,8 @@ class LocationPickerViewController: UIViewController, UIPickerViewDelegate, UIPi
     @IBOutlet weak var locationTextField: UITextField!
 
     @IBOutlet weak var modeSegmentedControl: UISegmentedControl!
+    @IBOutlet weak var cityPickerContainerView: UIView!
+    @IBOutlet weak var manualInputContainerView: UIView!
     
     var cities: [City] = []
 
@@ -35,20 +37,32 @@ class LocationPickerViewController: UIViewController, UIPickerViewDelegate, UIPi
     }
 
     func updateInputMode() {
+//        let isTextMode = (modeSegmentedControl.selectedSegmentIndex == 1)
+//
+//        pickerView.isHidden = isTextMode
+//        pickerView.isUserInteractionEnabled = !isTextMode
+//        locationTextField.isHidden = !isTextMode
+//        locationTextField.isUserInteractionEnabled = isTextMode
+//
+//        if isTextMode {
+//            locationTextField.becomeFirstResponder()
+//        } else {
+//            locationTextField.resignFirstResponder()
+//            let selectedRow = pickerView.selectedRow(inComponent: 0)
+//            updateMapWithCity(at: selectedRow)
+//        }
         let isTextMode = (modeSegmentedControl.selectedSegmentIndex == 1)
 
-        pickerView.isHidden = isTextMode
-        pickerView.isUserInteractionEnabled = !isTextMode
-        locationTextField.isHidden = !isTextMode
-        locationTextField.isUserInteractionEnabled = isTextMode
+            cityPickerContainerView.isHidden = isTextMode
+            manualInputContainerView.isHidden = !isTextMode
 
-        if isTextMode {
-            locationTextField.becomeFirstResponder()
-        } else {
-            locationTextField.resignFirstResponder()
-            let selectedRow = pickerView.selectedRow(inComponent: 0)
-            updateMapWithCity(at: selectedRow)
-        }
+            if isTextMode {
+                locationTextField.becomeFirstResponder()
+            } else {
+                locationTextField.resignFirstResponder()
+                let selectedRow = pickerView.selectedRow(inComponent: 0)
+                updateMapWithCity(at: selectedRow)
+            }
     }
 
     // Load JSON Data
