@@ -13,6 +13,9 @@ class HomeTabViewController: UIViewController, CLLocationManagerDelegate {
     // 위치 관련 객체
     let locationManager = CLLocationManager()
     let geocoder = CLGeocoder()
+    
+    // 날씨 상세 데이터 보관용 변수
+    var weatherDetailText: String = ""
 
     // 자동 위치 감지 on/off
     var isAutoLocationEnabled = true
@@ -58,6 +61,13 @@ class HomeTabViewController: UIViewController, CLLocationManagerDelegate {
         print("지역 선택 눌림")
         performSegue(withIdentifier: "showLocationPicker", sender: nil)
     }
+    
+    @IBAction func didTapShowDetails(_ sender: UIButton) {
+        let popupVC = WeatherDetailPopupViewController()
+            popupVC.modalPresentationStyle = .overCurrentContext
+            popupVC.weatherSummary = self.weatherDetailText
+            present(popupVC, animated: true)
+    }
     @IBAction func didTapRecommend(_ sender: UIButton) {
 //        print("추천 받기 눌림")
 //        performSegue(withIdentifier: "showRecommendation", sender: nil)
@@ -68,6 +78,7 @@ class HomeTabViewController: UIViewController, CLLocationManagerDelegate {
             recommendationVC.temperature = self.temperatureLabel.text ?? ""
             recommendationVC.humidity = self.humidityLabel.text ?? ""
             recommendationVC.windSpeed = self.windSpeedLabel.text ?? ""
+            recommendationVC.weatherDetailText = self.weatherDetailText
             
             // 전체 화면 전환 설정
             recommendationVC.modalPresentationStyle = .fullScreen
@@ -139,12 +150,45 @@ class HomeTabViewController: UIViewController, CLLocationManagerDelegate {
                     let iconURL = URL(string: "https://openweathermap.org/img/wn/\(icon)@2x.png")!
                     let iconData = try Data(contentsOf: iconURL)
                     let image = UIImage(data: iconData)
+                    
+                    let feelsLike = (main["feels_like"] as? Double ?? 0.0) - 273.15
+                    let tempMin = (main["temp_min"] as? Double ?? 0.0) - 273.15
+                    let tempMax = (main["temp_max"] as? Double ?? 0.0) - 273.15
+                    let pressure = main["pressure"] as? Int ?? 0
+                    let cloudPercent = (json["clouds"] as? [String: Any])?["all"] as? Int ?? 0
+                    let windDeg = wind["deg"] as? Int ?? 0
+                    let rain = (json["rain"] as? [String: Any])?["1h"] as? Double ?? 0.0
+                    let snow = (json["snow"] as? [String: Any])?["1h"] as? Double ?? 0.0
+
+                    let sys = json["sys"] as? [String: Any]
+                    let sunriseUnix = sys?["sunrise"] as? TimeInterval ?? 0
+                    let sunsetUnix = sys?["sunset"] as? TimeInterval ?? 0
+
+                    let dateFormatter = DateFormatter()
+                    dateFormatter.timeStyle = .short
+                    dateFormatter.locale = Locale(identifier: "ko_KR")
+                    let sunrise = dateFormatter.string(from: Date(timeIntervalSince1970: sunriseUnix))
+                    let sunset = dateFormatter.string(from: Date(timeIntervalSince1970: sunsetUnix))
 
                     DispatchQueue.main.async {
                         self.weatherImageView?.image = image
                         self.temperatureLabel?.text = String(format: "%.1f°C", temp)
-                        self.humidityLabel?.text = String(format: "습도: %.0f%%", humidity)
-                        self.windSpeedLabel?.text = String(format: "풍속: %.1f m/s", windSpeed)
+                        self.humidityLabel?.text = String(format: "💧 습도: %.0f%%", humidity)
+                        self.windSpeedLabel?.text = String(format: "💨 풍속: %.1f m/s", windSpeed)
+                        self.weatherDetailText = """
+                        🌡️ 현재 기온: \(String(format: "%.1f°C", temp))
+                        🥵 체감 온도: \(String(format: "%.1f°C", feelsLike))
+                        
+                        ⬆️ 최고: \(String(format: "%.1f°C", tempMax))      ⬇️ 최저: \(String(format: "%.1f°C", tempMin))
+
+                        💧 습도: \(String(format: "%.0f%%", humidity))         ☁️ 구름: \(cloudPercent)%
+                        🌧️ 강수: \(String(format: "%.1f", rain))mm       ❄️ 적설: \(String(format: "%.1f", snow))mm
+
+                        💨 풍속: \(String(format: "%.1f m/s", windSpeed))     🧭 풍향: \(windDeg)°
+                        📈 기압: \(pressure) hPa  
+
+                        ☀️ 일출: \(sunrise)   🌙 일몰: \(sunset)
+                        """
                     }
                 }
             } catch {
