@@ -2,6 +2,8 @@
 //  WearCast
 
 import UIKit
+import FirebaseFirestore
+import FirebaseAuth
 
 class RecommendationViewController: UIViewController {
 
@@ -28,6 +30,7 @@ class RecommendationViewController: UIViewController {
     var weatherDetailText: String = ""
     var userPreferences: [String: Any]? // 성별, 스타일, 상황, 색상 정보
     var preference: [String: Any]?
+    var locationName: String = ""
     
     var apiKey = ""
     
@@ -130,33 +133,60 @@ class RecommendationViewController: UIViewController {
 
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
             guard let data = data else {
-                print("OpenAI 응답 없음:", error?.localizedDescription ?? "Unknown error")
+                print("❌ OpenAI 응답 없음:", error?.localizedDescription ?? "Unknown error")
                 return
             }
-            do {
-                if let responseDict = try JSONSerialization.jsonObject(with: data) as? [String: Any],
-                   let choices = responseDict["choices"] as? [[String: Any]],
-                   let message = choices.first?["message"] as? [String: Any],
-                   let content = message["content"] as? String,
-                   let jsonData = content.data(using: .utf8),
-                   let result = try? JSONSerialization.jsonObject(with: jsonData) as? [String: Any] {
 
-                    DispatchQueue.main.async {
-                        self.recommendation = (
-                            top: result["top"] as? String ?? "",
-                            bottom: result["bottom"] as? String ?? "",
-                            outer: result["outer"] as? String ?? "",
-                            shoes: result["shoes"] as? String ?? "",
-                            accessories: result["accessories"] as? String ?? "",
-                            tips: result["tips"] as? [String] ?? []
-                        )
-                        self.setupView()
-                    }
-                } else {
-                    print("OpenAI 응답 파싱 실패")
+            do {
+                // 1. 전체 응답 디코드
+                guard let responseDict = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+                    print("❌ 전체 JSON 디코딩 실패")
+                    return
+                }
+
+                print("📦 전체 응답 JSON:\n\(responseDict)")
+
+                // 2. 응답 구조 추출
+                guard let choices = responseDict["choices"] as? [[String: Any]],
+                      let message = choices.first?["message"] as? [String: Any],
+                      let content = message["content"] as? String else {
+                    print("❌ 응답 구조 파싱 실패")
+                    return
+                }
+
+                print("📥 GPT 응답 (content):\n\(content)")
+
+                // 3. 불필요한 ```json 제거
+                let cleaned = content
+                    .replacingOccurrences(of: "```json", with: "")
+                    .replacingOccurrences(of: "```", with: "")
+                    .trimmingCharacters(in: .whitespacesAndNewlines)
+
+                print("🧼 cleaned JSON 문자열:\n\(cleaned)")
+
+                // 4. JSON 문자열 → 딕셔너리
+                guard let jsonData = cleaned.data(using: .utf8),
+                      let result = try JSONSerialization.jsonObject(with: jsonData) as? [String: Any] else {
+                    print("❌ JSON 문자열 파싱 실패")
+                    return
+                }
+
+                print("✅ 파싱 성공 - 결과:\n\(result)")
+
+                // 5. 메인 스레드에서 UI 반영
+                DispatchQueue.main.async {
+                    self.recommendation = (
+                        top: result["top"] as? String ?? "",
+                        bottom: result["bottom"] as? String ?? "",
+                        outer: result["outer"] as? String ?? "",
+                        shoes: result["shoes"] as? String ?? "",
+                        accessories: result["accessories"] as? String ?? "",
+                        tips: result["tips"] as? [String] ?? []
+                    )
+                    self.setupView()
                 }
             } catch {
-                print("JSON 파싱 에러:", error)
+                print("❌ JSON 파싱 예외 발생:", error)
             }
         }
         task.resume()
@@ -298,7 +328,44 @@ class RecommendationViewController: UIViewController {
 
     @IBAction func didTapSave(_ sender: UIButton) {
         print("추천 저장")
-        // → UserDefaults or 서버에 저장
+        guard let reco = recommendation else {
+            print("추천된 옷 정보가 없습니다.")
+            return
+        }
+        
+        guard let user = Auth.auth().currentUser else {
+            print("❌ 사용자 인증 실패: 익명 로그인 필요")
+            return
+        }
+
+        let uid = user.uid  // 🔐 사용자 고유 ID
+
+        // 저장할 키
+        let key = UUID().uuidString
+
+        // 전체 저장할 데이터 (추천 + 날씨 요약 + preference 포함)
+        let outfitData: [String: Any] = [
+            "uid": uid,
+            "top": reco.top,
+            "bottom": reco.bottom,
+            "outer": reco.outer,
+            "shoes": reco.shoes,
+            "accessories": reco.accessories,
+            "tips": reco.tips,
+            "weatherDetail": weatherDetailText,
+            "preference": preference ?? [:],  // nil 방지
+            "location": locationName,
+            "timestamp": Timestamp(date: Date())
+        ]
+        
+        // Firestore 저장
+        let db = DbFirebase(parentNotification: nil)
+        db.saveChange(key: key, object: outfitData, action: .add)
+
+        // 알림
+        let alert = UIAlertController(title: "저장 완료", message: "날씨와 함께 착장을 저장했어요!", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "확인", style: .default))
+        present(alert, animated: true)
     }
     
     @IBAction func didTapBackButton(_ sender: UIButton) {

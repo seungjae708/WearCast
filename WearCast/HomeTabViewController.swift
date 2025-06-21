@@ -85,6 +85,7 @@ class HomeTabViewController: UIViewController, CLLocationManagerDelegate {
                         recoVC.humidity = self.humidityLabel.text ?? ""
                         recoVC.windSpeed = self.windSpeedLabel.text ?? ""
                         recoVC.weatherDetailText = self.weatherDetailText
+                        recoVC.locationName = self.locationLabel.text ?? ""
 
                         // 💡 여기서 preference 데이터를 넘겨줌
                         recoVC.preference = selected
