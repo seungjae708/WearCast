@@ -69,21 +69,33 @@ class HomeTabViewController: UIViewController, CLLocationManagerDelegate {
             present(popupVC, animated: true)
     }
     @IBAction func didTapRecommend(_ sender: UIButton) {
-//        print("추천 받기 눌림")
-//        performSegue(withIdentifier: "showRecommendation", sender: nil)
-        let storyboard = UIStoryboard(name: "Main", bundle: nil)
-        if let recommendationVC = storyboard.instantiateViewController(withIdentifier: "RecommendationViewController") as? RecommendationViewController {
-            
-            // 날씨 정보 전달
-            recommendationVC.temperature = self.temperatureLabel.text ?? ""
-            recommendationVC.humidity = self.humidityLabel.text ?? ""
-            recommendationVC.windSpeed = self.windSpeedLabel.text ?? ""
-            recommendationVC.weatherDetailText = self.weatherDetailText
-            
-            // 전체 화면 전환 설정
-            recommendationVC.modalPresentationStyle = .fullScreen
-            self.present(recommendationVC, animated: true, completion: nil)
-        }
+        let preferenceVC = PreferencePopupViewController()
+            preferenceVC.modalPresentationStyle = .overCurrentContext
+            preferenceVC.modalTransitionStyle = .crossDissolve
+
+            preferenceVC.preferenceSelectedHandler = { [weak self] selected in
+                guard let self = self else { return }
+
+                // 팝업 닫히는 걸 기다린 후 화면 전환
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    let storyboard = UIStoryboard(name: "Main", bundle: nil)
+                    if let recoVC = storyboard.instantiateViewController(withIdentifier: "RecommendationViewController") as? RecommendationViewController {
+                        
+                        recoVC.temperature = self.temperatureLabel.text ?? ""
+                        recoVC.humidity = self.humidityLabel.text ?? ""
+                        recoVC.windSpeed = self.windSpeedLabel.text ?? ""
+                        recoVC.weatherDetailText = self.weatherDetailText
+
+                        // 💡 여기서 preference 데이터를 넘겨줌
+                        recoVC.preference = selected
+
+                        recoVC.modalPresentationStyle = .fullScreen
+                        self.present(recoVC, animated: true)
+                    }
+                }
+            }
+
+            present(preferenceVC, animated: true)
     }
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {

@@ -26,6 +26,8 @@ class RecommendationViewController: UIViewController {
     var humidity: String = ""
     var windSpeed: String = ""
     var weatherDetailText: String = ""
+    var userPreferences: [String: Any]? // 성별, 스타일, 상황, 색상 정보
+    var preference: [String: Any]?
     
     var apiKey = ""
     
@@ -60,15 +62,39 @@ class RecommendationViewController: UIViewController {
     }
     
     func fetchRecommendationFromOpenAI() {
+        var preferenceText = ""
+        if let pref = preference {
+            if let gender = pref["gender"] as? String { preferenceText += "\n- 성별: \(gender)" }
+            if let style = pref["style"] as? [String] { preferenceText += "\n- 스타일: \(style.joined(separator: ", "))" }
+            if let situation = pref["situation"] as? [String] { preferenceText += "\n- 상황: \(situation.joined(separator: ", "))" }
+            if let colors = pref["colors"] as? [String] { preferenceText += "\n- 색상 선호: \(colors.joined(separator: ", "))" }
+        }
+        
         let prompt = """
-        다음은 날씨 정보입니다: \(weatherDetailText)
+        [날씨 요약]
+        \(weatherDetailText)
 
-        위 날씨에 어울리는 옷차림을 패션 스타일리스트의 관점에서 구체적으로 추천해줘.
-        - 각 항목(상의, 하의, 겉옷, 신발, 액세서리)은 구체적인 의류 종류, 소재, 색감, 조합을 포함할 것
-        - 실용성과 스타일을 모두 고려할 것
-        - 추천 사유는 3개, 명확하고 간결하게
+        [사용자 정보]
+        \(preferenceText)
 
-        다음 JSON 형식으로 응답해줘:
+        위의 날씨와 사용자 정보를 참고하여, 아래 조건에 따라 오늘의 패션 스타일을 추천해 주세요.
+        구성 항목:
+        - 상의, 하의, 겉옷, 신발, 액세서리 각각 1개씩
+        - 각 항목은 **옷의 종류뿐 아니라 길이(예: 반팔, 긴팔, 반바지, 긴바지)**, 소재, 색감, 조합을 반드시 명시할 것
+
+        날씨 기준 조건:
+        - **기온이 25도 이상이면 겉옷은 절대 추천하지 말 것**
+        - 25도 이상이면 반팔 또는 민소매 위주로 구성
+        - 15도 이상 22도 이하는 봄/가을용 얇은 겉옷, 긴팔 포함 가능
+        - 13도 미만일 경우 보온성이 좋은 겉옷 (코트, 패딩 등) 포함
+        
+        - 추천 대상은 \(preference?["gender"] as? String ?? "사용자")입니다.
+        - 사용자가 선호하는 스타일은 \( (preference?["style"] as? [String])?.joined(separator: ", ") ?? "없음")입니다.
+        - 옷차림은 주로 \( (preference?["situation"] as? [String])?.joined(separator: ", ") ?? "일상") 상황에 어울려야 합니다.
+        - 전체적인 색상 톤은 \( (preference?["colors"] as? [String])?.joined(separator: ", ") ?? "자유롭게") 분위기를 내도록 구성해 주세요.
+
+        [출력 형식]
+        아래 JSON 형식으로 답변해 주세요:
 
         {
           "top": "예: 연청 린넨 셔츠",
@@ -140,7 +166,22 @@ class RecommendationViewController: UIViewController {
     
     @IBAction func didTapStyleAgain(_ sender: UIButton) {
         print("스타일 다시 추천받기")
-        // → 옵션 선택 뷰로 이동 or 다시 요청
+        let preferenceVC = PreferencePopupViewController()
+        preferenceVC.modalPresentationStyle = .overCurrentContext
+        preferenceVC.modalTransitionStyle = .crossDissolve
+
+        preferenceVC.preferenceSelectedHandler = { [weak self] selected in
+            guard let self = self else { return }
+
+            self.preference = selected
+            self.recommendation = nil // 이전 추천 초기화
+            self.setupView() // UI 초기화 (로딩 중... 텍스트 등)
+            self.fetchRecommendationFromOpenAI() // 새로 추천 받기
+
+            self.dismiss(animated: true)
+        }
+
+        self.present(preferenceVC, animated: true)
     }
     
     @IBAction func didTapPreviewImageButton(_ sender: UIButton) {
@@ -162,17 +203,22 @@ class RecommendationViewController: UIViewController {
         ])
         self.present(loadingAlert, animated: true)
 
+        let genderText = (preference?["gender"] as? String) ?? "모델"
+        let styleText = (preference?["style"] as? [String])?.joined(separator: ", ") ?? "선호 스타일 없음"
+        let situationText = (preference?["situation"] as? [String])?.joined(separator: ", ") ?? "일상"
+        let colorTone = (preference?["colors"] as? [String])?.joined(separator: ", ") ?? "자연스러운 톤"
+        
         // 2. 프롬프트 생성
         let prompt = """
-        A realistic outfit photo featuring:
-        - Top: \(reco.top)
-        - Bottom: \(reco.bottom)
-        - Outer: \(reco.outer)
-        - Shoes: \(reco.shoes)
-        - Accessories: \(reco.accessories)
+            A realistic outfit photo featuring:
+            - Top: \(reco.top)
+            - Bottom: \(reco.bottom)
+            - Outer: \(reco.outer)
+            - Shoes: \(reco.shoes)
+            - Accessories: \(reco.accessories)
 
-        Show the full outfit on a standing model, modern clean background, 4K quality, fashion catalog style.
-        """
+            Show the full outfit on a single standing \(genderText) model only. No additional people. Use a modern clean background, 4K resolution, and fashion catalog style."
+            """
 
         // 3. 이미지 생성
         generateImageFromPrompt(prompt: prompt) { generatedImage in
