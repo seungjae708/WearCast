@@ -27,6 +27,12 @@ class CommunityTabViewController: UIViewController, UITableViewDelegate, UITable
 
         fetchAllOutfits()
     }
+    
+    // 화면이 나타날 때마다 최신 데이터 가져오기
+        override func viewWillAppear(_ animated: Bool) {
+            super.viewWillAppear(animated)
+            fetchAllOutfits()
+        }
 
     func fetchAllOutfits() {
         let db = Firestore.firestore()
