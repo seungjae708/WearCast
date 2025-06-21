@@ -41,7 +41,10 @@ class RecommendationViewController: UIViewController {
         super.viewDidLoad()
         setupView()
         
-        fetchRecommendationFromOpenAI()
+        // 이미 외부에서 recommendation이 설정되었는지 확인
+        if recommendation == nil {
+            fetchRecommendationFromOpenAI()
+        }
     }
 
     func setupView() {
@@ -133,28 +136,28 @@ class RecommendationViewController: UIViewController {
 
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
             guard let data = data else {
-                print("❌ OpenAI 응답 없음:", error?.localizedDescription ?? "Unknown error")
+                print("OpenAI 응답 없음:", error?.localizedDescription ?? "Unknown error")
                 return
             }
 
             do {
                 // 1. 전체 응답 디코드
                 guard let responseDict = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
-                    print("❌ 전체 JSON 디코딩 실패")
+                    print("전체 JSON 디코딩 실패")
                     return
                 }
 
-                print("📦 전체 응답 JSON:\n\(responseDict)")
+                print("전체 응답 JSON:\n\(responseDict)")
 
                 // 2. 응답 구조 추출
                 guard let choices = responseDict["choices"] as? [[String: Any]],
                       let message = choices.first?["message"] as? [String: Any],
                       let content = message["content"] as? String else {
-                    print("❌ 응답 구조 파싱 실패")
+                    print("응답 구조 파싱 실패")
                     return
                 }
 
-                print("📥 GPT 응답 (content):\n\(content)")
+                print("GPT 응답 (content):\n\(content)")
 
                 // 3. 불필요한 ```json 제거
                 let cleaned = content
@@ -162,16 +165,16 @@ class RecommendationViewController: UIViewController {
                     .replacingOccurrences(of: "```", with: "")
                     .trimmingCharacters(in: .whitespacesAndNewlines)
 
-                print("🧼 cleaned JSON 문자열:\n\(cleaned)")
+                print("cleaned JSON 문자열:\n\(cleaned)")
 
                 // 4. JSON 문자열 → 딕셔너리
                 guard let jsonData = cleaned.data(using: .utf8),
                       let result = try JSONSerialization.jsonObject(with: jsonData) as? [String: Any] else {
-                    print("❌ JSON 문자열 파싱 실패")
+                    print("JSON 문자열 파싱 실패")
                     return
                 }
 
-                print("✅ 파싱 성공 - 결과:\n\(result)")
+                print("파싱 성공 - 결과:\n\(result)")
 
                 // 5. 메인 스레드에서 UI 반영
                 DispatchQueue.main.async {
@@ -186,7 +189,7 @@ class RecommendationViewController: UIViewController {
                     self.setupView()
                 }
             } catch {
-                print("❌ JSON 파싱 예외 발생:", error)
+                print("JSON 파싱 예외 발생:", error)
             }
         }
         task.resume()
@@ -334,11 +337,11 @@ class RecommendationViewController: UIViewController {
         }
         
         guard let user = Auth.auth().currentUser else {
-            print("❌ 사용자 인증 실패: 익명 로그인 필요")
+            print("사용자 인증 실패: 익명 로그인 필요")
             return
         }
 
-        let uid = user.uid  // 🔐 사용자 고유 ID
+        let uid = user.uid  // 사용자 고유 ID
 
         // 저장할 키
         let key = UUID().uuidString

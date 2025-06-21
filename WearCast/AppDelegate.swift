@@ -22,9 +22,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         if Auth.auth().currentUser == nil {
             Auth.auth().signInAnonymously { authResult, error in
                 if let error = error {
-                    print("❌ 익명 로그인 실패: \(error.localizedDescription)")
+                    print("익명 로그인 실패: \(error.localizedDescription)")
                 } else {
-                    print("✅ 익명 로그인 성공: \(authResult?.user.uid ?? "")")
+                    print("익명 로그인 성공: \(authResult?.user.uid ?? "")")
                 }
             }
         } else {
