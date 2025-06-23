@@ -53,3 +53,27 @@ WearCast는 매일 아침 당신의 패션 고민을 덜어줍니다.
 4. Xcode에서 `Cmd + R`로 실행!
 
 ---
+
+## 🧱 앱 내비게이션 구조
+
+### UITabBarController 구성
+
+- **🧥 코디 추천 (`HomeTabViewController`)**
+  - 위치 선택: `LocationPickerViewController`
+  - 날씨 확인: OpenWeatherMap API 사용
+  - 상세 기상정보 보기: `WeatherDetailPopupViewController`
+  - 사용자 선호 입력: `PreferencePopupViewController`
+  - AI 추천 받기: `RecommendationViewController`
+    - 추천 결과 이미지 생성: `PreviewImageViewController`
+  - 추천 저장: Firebase Firestore 연동
+
+- **🌐 커뮤니티 (`CommunityTabViewController`)**
+  - 전체 피드 목록: `UITableView`
+  - 셀 선택 시 → 상세 코디 보기 (Detail 화면)
+
+- **🧳 내 코디함 (`MyPageViewController`)**
+  - 내가 등록한 코디 불러오기: `MyOutfitListViewController`
+    - 셀 선택 시 → 상세 코디 보기 (Detail 화면)
+  - 설정/FAQ/로그아웃 페이지 이동
+
+---
